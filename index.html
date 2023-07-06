@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>3D City Viewer</title>
+  <title>3D Model with Video Texture</title>
   <style>
     #canvas-container {
       position: absolute;
@@ -46,52 +46,41 @@
       // Create the controls for navigation
       controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-      // Load the city model
+      // Load the 3D model
       const loader = new THREE.GLTFLoader();
-      loader.load('models/buildings.gltf', function (gltf) {
+      loader.load('model.gltf', function (gltf) {
         const model = gltf.scene;
-        scene.add(model);
+        
+        // Load the video
+        const video = document.createElement('video');
+        video.src = 'video.mp4';
+        video.loop = true;
+        video.crossOrigin = 'anonymous';
+        video.muted = true;
+        video.play();
 
-        // Customize the city model as needed
-        model.position.set(0, 0, 0);
-        model.scale.set(1, 1, 1);
+        // Create the video texture
+        const videoTexture = new THREE.VideoTexture(video);
+        videoTexture.minFilter = THREE.LinearFilter;
+        videoTexture.magFilter = THREE.LinearFilter;
+        videoTexture.format = THREE.RGBFormat;
 
-        // Apply video texture to the desired mesh
-        model.traverse(function (child) {
-          if (child.isMesh && child.name === 'videoMesh') {
-            const video = document.createElement('video');
-            video.src = 'models/ExplosionsV1-0001.mp4';
-            video.loop = true;
-            video.autoplay = true;
-            video.crossOrigin = 'anonymous';
-
-            const videoTexture = new THREE.VideoTexture(video);
-            const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
-
-            child.material = videoMaterial;
+        // Apply the video texture to the model's material
+        const material = new THREE.MeshBasicMaterial({ map: videoTexture });
+        model.traverse(function (node) {
+          if (node.isMesh) {
+            node.material = material;
           }
         });
+
+        // Add the model to the scene
+        scene.add(model);
       });
 
       // Create the gradient background
       const gradientTexture = new THREE.Texture(generateGradientCanvas());
       gradientTexture.needsUpdate = true;
       scene.background = gradientTexture;
-
-      // Load and add the additional videos as textures to the scene
-      const videoTexture1 = createVideoTexture('models/Gen2BarroqueGarden.mp4');
-      const videoTexture2 = createVideoTexture('models/ExplosionsV1-0001.mp4');
-
-      // Create the meshes for the videos and position them in the scene
-      const videoGeometry1 = new THREE.PlaneGeometry(2, 1.5);
-      const videoMesh1 = new THREE.Mesh(videoGeometry1, new THREE.MeshBasicMaterial({ map: videoTexture1 }));
-     videoMesh1.position.set(2, 0, 0);
-      scene.add(videoMesh1);
-
-      const videoGeometry2 = new THREE.PlaneGeometry(2, 1.5);
-      const videoMesh2 = new THREE.Mesh(videoGeometry2, new THREE.MeshBasicMaterial({ map: videoTexture2 }));
-      videoMesh2.position.set(-2, 0, 0);
-      scene.add(videoMesh2);
     }
 
     function animate() {
@@ -109,15 +98,6 @@
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
       return canvas;
-    }
-
-    function createVideoTexture(videoPath) {
-      const video = document.createElement('video');
-      video.src = videoPath;
-      video.loop = true;
-      video.autoplay = true;
-      video.crossOrigin = 'anonymous';
-      return new THREE.VideoTexture(video);
     }
   </script>
 </body>
