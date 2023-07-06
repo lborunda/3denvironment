@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>3D Model with Video Texture</title>
+  <title>3D City Viewer</title>
   <style>
     #canvas-container {
       position: absolute;
@@ -18,6 +18,7 @@
 <body>
   <div id="canvas-container"></div>
 
+  
   <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
@@ -46,41 +47,38 @@
       // Create the controls for navigation
       controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+      // Load the city model
+      const loader = new THREE.GLTFLoader();
+      loader.load('models/buildings.gltf', function (gltf) {
+        const model = gltf.scene;
+        scene.add(model);
+      });
+
+      // Load the flying model
+      loader.load('models/model.gltf', function (gltf) {
+        const flyingModel = gltf.scene;
+        scene.add(flyingModel);
+      });
+
       // Create the gradient background
       const gradientTexture = new THREE.Texture(generateGradientCanvas());
       gradientTexture.needsUpdate = true;
       scene.background = gradientTexture;
 
-      // Load the 3D model
-      const loader = new THREE.GLTFLoader();
-      loader.load('models/buildings.gltf', function (gltf) {
-        const model = gltf.scene;
+      // Load and add the additional videos as textures to the scene
+      const videoTexture1 = createVideoTexture('models/Gen2BarroqueGarden.mp4');
+      const videoTexture2 = createVideoTexture('models/ExplosionsV1-0001.mp4');
 
-        // Load the video
-        const video = document.createElement('video');
-        video.src = 'video.mp4';
-        video.loop = true;
-        video.crossOrigin = 'anonymous';
-        video.muted = true;
-        video.play();
+      // Create the meshes for the videos and position them in the scene
+      const videoGeometry1 = new THREE.PlaneGeometry(2, 1.5);
+      const videoMesh1 = new THREE.Mesh(videoGeometry1, new THREE.MeshBasicMaterial({ map: videoTexture1 }));
+      videoMesh1.position.set(2, 0, 0);
+      scene.add(videoMesh1);
 
-        // Create the video texture
-        const videoTexture = new THREE.VideoTexture(video);
-        videoTexture.minFilter = THREE.LinearFilter;
-        videoTexture.magFilter = THREE.LinearFilter;
-        videoTexture.format = THREE.RGBFormat;
-
-        // Traverse through the model's hierarchy and apply the video texture to materials
-        model.traverse(function (node) {
-          if (node.isMesh) {
-            node.material.map = videoTexture;
-            node.material.needsUpdate = true;
-          }
-        });
-
-        // Add the model to the scene
-        scene.add(model);
-      });
+      const videoGeometry2 = new THREE.PlaneGeometry(2, 1.5);
+      const videoMesh2 = new THREE.Mesh(videoGeometry2, new THREE.MeshBasicMaterial({ map: videoTexture2 }));
+      videoMesh2.position.set(-2, 0, 0);
+      scene.add(videoMesh2);
     }
 
     function animate() {
@@ -93,11 +91,20 @@
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const gradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
-      gradient.addColorStop(0, 'blue');
-      gradient.addColorStop(1, 'pink');
+      gradient.addColorStop(0, 'pink');
+      gradient.addColorStop(1, 'blue');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
       return canvas;
+    }
+
+    function createVideoTexture(videoPath) {
+      const video = document.createElement('video');
+      video.src = videoPath;
+      video.loop = true;
+      video.autoplay = true;
+      video.crossOrigin = 'anonymous';
+      return new THREE.VideoTexture(video);
     }
   </script>
 </body>
