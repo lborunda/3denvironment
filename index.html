@@ -53,7 +53,7 @@
 
       // Load the 3D model
       const loader = new THREE.GLTFLoader();
-      loader.load('model.gltf', function (gltf) {
+      loader.load('models/buildings.gltf', function (gltf) {
         const model = gltf.scene;
 
         // Load the video
@@ -70,11 +70,11 @@
         videoTexture.magFilter = THREE.LinearFilter;
         videoTexture.format = THREE.RGBFormat;
 
-        // Apply the video texture to the model's material
-        const material = new THREE.MeshBasicMaterial({ map: videoTexture });
+        // Traverse through the model's hierarchy and apply the video texture to materials
         model.traverse(function (node) {
           if (node.isMesh) {
-            node.material = material;
+            node.material.map = videoTexture;
+            node.material.needsUpdate = true;
           }
         });
 
