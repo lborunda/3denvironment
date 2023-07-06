@@ -18,7 +18,6 @@
 <body>
   <div id="canvas-container"></div>
 
-  
   <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
@@ -52,12 +51,26 @@
       loader.load('models/buildings.gltf', function (gltf) {
         const model = gltf.scene;
         scene.add(model);
-      });
 
-      // Load the flying model
-      loader.load('models/model.gltf', function (gltf) {
-        const flyingModel = gltf.scene;
-        scene.add(flyingModel);
+        // Customize the city model as needed
+        model.position.set(0, 0, 0);
+        model.scale.set(1, 1, 1);
+
+        // Apply video texture to the desired mesh
+        model.traverse(function (child) {
+          if (child.isMesh && child.name === 'videoMesh') {
+            const video = document.createElement('video');
+            video.src = 'models/ExplosionsV1-0001.mp4';
+            video.loop = true;
+            video.autoplay = true;
+            video.crossOrigin = 'anonymous';
+
+            const videoTexture = new THREE.VideoTexture(video);
+            const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+
+            child.material = videoMaterial;
+          }
+        });
       });
 
       // Create the gradient background
@@ -72,7 +85,7 @@
       // Create the meshes for the videos and position them in the scene
       const videoGeometry1 = new THREE.PlaneGeometry(2, 1.5);
       const videoMesh1 = new THREE.Mesh(videoGeometry1, new THREE.MeshBasicMaterial({ map: videoTexture1 }));
-      videoMesh1.position.set(2, 0, 0);
+     videoMesh1.position.set(2, 0, 0);
       scene.add(videoMesh1);
 
       const videoGeometry2 = new THREE.PlaneGeometry(2, 1.5);
