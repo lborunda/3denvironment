@@ -46,11 +46,16 @@
       // Create the controls for navigation
       controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+      // Create the gradient background
+      const gradientTexture = new THREE.Texture(generateGradientCanvas());
+      gradientTexture.needsUpdate = true;
+      scene.background = gradientTexture;
+
       // Load the 3D model
       const loader = new THREE.GLTFLoader();
       loader.load('model.gltf', function (gltf) {
         const model = gltf.scene;
-        
+
         // Load the video
         const video = document.createElement('video');
         video.src = 'video.mp4';
@@ -76,11 +81,6 @@
         // Add the model to the scene
         scene.add(model);
       });
-
-      // Create the gradient background
-      const gradientTexture = new THREE.Texture(generateGradientCanvas());
-      gradientTexture.needsUpdate = true;
-      scene.background = gradientTexture;
     }
 
     function animate() {
@@ -93,8 +93,8 @@
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const gradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
-      gradient.addColorStop(0, 'pink');
-      gradient.addColorStop(1, 'blue');
+      gradient.addColorStop(0, 'blue');
+      gradient.addColorStop(1, 'pink');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
       return canvas;
